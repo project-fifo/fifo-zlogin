@@ -1,0 +1,6 @@
+-sname fifo-zlogin
+
+-setcookie fifo-zlogin_cookie
+
++K true
++A30
