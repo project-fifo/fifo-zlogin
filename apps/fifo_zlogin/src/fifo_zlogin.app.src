@@ -1,11 +1,14 @@
-{application, 'fifo-zlogin',
- [{description, "An OTP application"},
+{application, 'fifo_zlogin',
+ [{description, "FiFo zlogin server"},
   {vsn, "0.1.0"},
   {registered, []},
-  {mod, {'fifo-zlogin_app', []}},
+  {mod, {'fifo_zlogin_app', []}},
   {applications,
    [kernel,
-    stdlib
+    stdlib,
+    fifo_utils,
+    jsx,
+    lager
    ]},
   {env,[]},
   {modules, []},

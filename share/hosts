@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+fifo_host_file=/opt/chunter/etc/hosts
+[ -f $fifo_host_file ] && cat $fifo_host_file >> /etc/hosts

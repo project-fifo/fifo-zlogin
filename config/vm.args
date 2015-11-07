@@ -1,6 +1,6 @@
--sname fifo-zlogin
+-name fifo_zlogin@127.0.0.1
 
--setcookie fifo-zlogin_cookie
+-setcookie erlang
 
 +K true
 +A30

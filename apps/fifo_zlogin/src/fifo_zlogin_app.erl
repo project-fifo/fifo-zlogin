@@ -1,9 +1,9 @@
 %%%-------------------------------------------------------------------
-%% @doc fifo-zlogin public API
+%% @doc fifo_zlogin public API
 %% @end
 %%%-------------------------------------------------------------------
 
--module('fifo-zlogin_app').
+-module('fifo_zlogin_app').
 
 -behaviour(application).
 
@@ -16,7 +16,7 @@
 %%====================================================================
 
 start(_StartType, _StartArgs) ->
-    'fifo-zlogin_sup':start_link().
+    'fifo_zlogin_sup':start_link().
 
 %%--------------------------------------------------------------------
 stop(_State) ->

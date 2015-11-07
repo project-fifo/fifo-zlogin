@@ -1,0 +1,90 @@
+<?xml version="1.0"?>
+<!DOCTYPE service_bundle SYSTEM "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
+<!--
+    Copyright 2012 Project FiFo / Heinz N. Gies
+-->
+
+<service_bundle type='manifest' name='zlogin'>
+  <service
+      name='fifo/zlogin'
+      type='service'
+      version='0.3.0'>
+    <create_default_instance enabled='true'/>
+
+    <single_instance />
+
+    <dependency
+        name='net-loopback'
+        grouping='require_all'
+        restart_on='none'
+        type='service'>
+      <service_fmri value='svc:/network/loopback' />
+    </dependency>
+
+    <dependency
+        name='fs'
+        grouping='require_all'
+        restart_on='none' type='service'>
+      <service_fmri value='svc:/system/filesystem/local'/>
+    </dependency>
+
+    <dependency
+        name='epmd'
+        grouping='require_all'
+        restart_on='none' type='service'>
+      <service_fmri value='svc:/network/epmd:default'/>
+    </dependency>
+
+    <exec_method
+        type='method'
+        name='start'
+        exec='/opt/zlogin/bin/zlogin %m'
+        timeout_seconds='120'>
+      <method_context>
+        <method_environment>
+          <envvar name='PATH' value='/opt/local/gnu/bin:/opt/local/bin:/opt/local/sbin:/usr/bin:/usr/sbin'/>
+          <envvar name='HOME' value='/opt/zlogin'/>
+          <envvar name='LD_LIBRARY_PATH' value='/opt/zlogin/share/lib'/>
+        </method_environment>
+      </method_context>
+    </exec_method>
+
+    <exec_method
+        name='restart'
+        type='method'
+        exec='/opt/zlogin/bin/zlogin %m'
+        timeout_seconds='120'>
+      <method_context>
+        <method_environment>
+          <envvar name='PATH' value='/opt/local/gnu/bin:/opt/local/bin:/opt/local/sbin:/usr/bin:/usr/sbin'/>
+          <envvar name='HOME' value='/opt/zlogin'/>
+        </method_environment>
+      </method_context>
+    </exec_method>
+
+    <exec_method
+        name='stop'
+        type='method'
+        exec='/opt/zlogin/bin/zlogin %m'
+        timeout_seconds='120'>
+      <method_context>
+        <method_environment>
+          <envvar name='PATH' value='/opt/local/gnu/bin:/opt/local/bin:/opt/local/sbin:/usr/bin:/usr/sbin'/>
+          <envvar name='HOME' value='/opt/zlogin'/>
+        </method_environment>
+      </method_context>
+    </exec_method>
+    <property_group name='startd' type='framework'>
+      <!-- sub-process core dumps shouldn't restart session -->
+      <propval name='ignore_error' type='astring' value='core,signal' />
+    </property_group>
+
+    <template>
+      <common_name>
+        <loctext xml:lang='C'>
+          Project FiFo's Hypervisor manager.
+        </loctext>
+      </common_name>
+    </template>
+  </service>
+</service_bundle>
