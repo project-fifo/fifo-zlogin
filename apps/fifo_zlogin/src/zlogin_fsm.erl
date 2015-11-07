@@ -56,7 +56,7 @@ send(UUID, Data) ->
     gen_fsm:send_event({global, {zlogin, UUID}}, {send, Data}).
 
 stop(UUID) ->
-    gen_fsm:send_event({global, {zlogin, UUID}}, stop).
+    gen_fsm:send_all_state_event({global, {zlogin, UUID}}, stop).
 
 %%%===================================================================
 %%% gen_fsm callbacks
