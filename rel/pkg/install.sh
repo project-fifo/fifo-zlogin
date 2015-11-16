@@ -2,36 +2,10 @@
 
 . /usbkey/config
 
-TESTED_VERSIONS=20150108T111855Z\|20150417T032339Z\|20150806T063417Z\|20151001T070028Z
-BAD_VERSIONS=2012\|2013\|2014\|20150528T153328Z
-
-
-## 20150528T153328Z - kstat bug, keeps growing indefinetly
-
 if [ -z "$DST" ]
 then
     DST="/opt"
 fi
-
-function graylist {
-    ver="$1"
-    msg="$2"
-    if uname -a | egrep $ver
-    then
-        echo $msg
-        echo
-        echo "This SmartOS release is affected by the abovementioned problem!"
-        echo "Would you like to continue non the less? [yes|NO] "
-        read SKIP
-        if [[ "$SKIP" = "yes" ]]
-        then
-            echo "Okay we go on, but it might not work!"
-        else
-            echo "Exiting."
-            exit 1
-        fi
-    fi
-}
 
 #IFACE=`dladm show-phys -m | grep $admin_nic | awk '{print $1}'`
 #IP=`ifconfig $IFACE | grep inet | awk '{print $2}'`
@@ -51,33 +25,6 @@ while getopts ":f" opt; do
             ;;
     esac
 done
-
-if uname -a | egrep $BAD_VERSIONS
-then
-    echo "Sorry this SmartOS version is known to be incompatible or faulty."
-    exit 1
-fi
-
-if [ "$FORCE" = false ] ; then
-    if uname -a | egrep $TESTED_VERSIONS
-    then
-        echo "This SmartOS release is tested!"
-    else
-        echo "This SmartOS release WAS NOT tested! Are you sure you want to go on? [yes|NO] "
-        read SKIP
-        if [[ "$SKIP" = "yes" ]]
-        then
-            echo "Okay we go on, but it might not work!"
-        else
-            echo "Exiting."
-            exit 1
-        fi
-    fi
-fi
-
-# We've to initialize imgadm or it will die horribly .... *sigh*
-imgadm update
-[ -d /var/imgadm/images ] || mkdir -p /var/imgadm/images
 
 (cd "$DST"; uudecode -p "$DIR/$BASE"| tar xf -)
 mkdir -p /var/log/fifo_zlogin
