@@ -12,7 +12,6 @@
    ]},
   {env,[]},
   {modules, []},
-
   {contributors, []},
   {licenses, []},
   {links, []}
