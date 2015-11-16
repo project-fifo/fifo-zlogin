@@ -22,7 +22,12 @@
          handle_event/3,
          handle_sync_event/4, handle_info/3, terminate/3, code_change/4]).
 
--ignore_xref([tick/0]).
+-ignore_xref([
+              stopped/2, stopped/3,
+              connected/2, connected/3,
+              kvm/2, kvm/3,
+              stop/1, send/2, start/2, start_link/2
+             ]).
 
 -define(SERVER, ?MODULE).
 -define(TICK, 1000).
