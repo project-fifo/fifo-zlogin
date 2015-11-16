@@ -38,13 +38,13 @@
     <exec_method
         type='method'
         name='start'
-        exec='/opt/zlogin/bin/zlogin %m'
+        exec='/opt/fifo_zlogin/bin/fifo_zlogin %m'
         timeout_seconds='120'>
       <method_context>
         <method_environment>
           <envvar name='PATH' value='/opt/local/gnu/bin:/opt/local/bin:/opt/local/sbin:/usr/bin:/usr/sbin'/>
-          <envvar name='HOME' value='/opt/zlogin'/>
-          <envvar name='LD_LIBRARY_PATH' value='/opt/zlogin/share/lib'/>
+          <envvar name='HOME' value='/opt/fifo_zlogin'/>
+          <envvar name='LD_LIBRARY_PATH' value='/opt/fifo_zlogin/share/lib'/>
         </method_environment>
       </method_context>
     </exec_method>
@@ -52,12 +52,12 @@
     <exec_method
         name='restart'
         type='method'
-        exec='/opt/zlogin/bin/zlogin %m'
+        exec='/opt/fifo_zlogin/bin/fifo_zlogin %m'
         timeout_seconds='120'>
       <method_context>
         <method_environment>
           <envvar name='PATH' value='/opt/local/gnu/bin:/opt/local/bin:/opt/local/sbin:/usr/bin:/usr/sbin'/>
-          <envvar name='HOME' value='/opt/zlogin'/>
+          <envvar name='HOME' value='/opt/fifo_zlogin'/>
         </method_environment>
       </method_context>
     </exec_method>
@@ -65,12 +65,12 @@
     <exec_method
         name='stop'
         type='method'
-        exec='/opt/zlogin/bin/zlogin %m'
+        exec='/opt/fifo_zlogin/bin/fifo_zlogin %m'
         timeout_seconds='120'>
       <method_context>
         <method_environment>
           <envvar name='PATH' value='/opt/local/gnu/bin:/opt/local/bin:/opt/local/sbin:/usr/bin:/usr/sbin'/>
-          <envvar name='HOME' value='/opt/zlogin'/>
+          <envvar name='HOME' value='/opt/fifo_zlogin'/>
         </method_environment>
       </method_context>
     </exec_method>
