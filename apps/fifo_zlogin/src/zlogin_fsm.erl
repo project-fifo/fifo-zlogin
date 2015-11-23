@@ -87,6 +87,7 @@ init([UUID, kvm]) ->
     {ok, kvm, #state{uuid = UUID}, 0};
 
 init([UUID, docker]) ->
+    lager:info("[zlogin:~s] Starting docker zlogin.", [UUID]),
     tick(),
     process_flag(trap_exit, true),
     {ok, stopped, #state{uuid = UUID, type = docker}};
@@ -118,14 +119,16 @@ kvm(_, _From, State) ->
 %% @end
 %%--------------------------------------------------------------------
 stopped(tick, State = #state{uuid = UUID}) ->
-    lager:info("[~s] tick", [UUID]),
+    lager:info("[zlogin:~s] tick", [UUID]),
     ConsolePort = open_zlogin(State),
     receive
         {'EXIT', ConsolePort, _PosixCode} ->
             tick(),
+            lager:info("[zlogin:~s] failed to login.", [UUID]),
             {next_state, stopped, State}
     after
         200 ->
+            lager:info("[zlogin:~s] connected.", [UUID]),
             remove_lock(UUID),
             State1  = State#state{console = ConsolePort},
             {next_state, connected, State1}
@@ -137,7 +140,7 @@ stopped({send, Data}, State = #state{uuid = UUID}) ->
 
 
 connected({send, Data}, State = #state{uuid = UUID, console = C}) ->
-    lager:info("[~s] < ~s", [UUID, Data]),
+    lager:info("[zlogin:~s] < ~s", [UUID, Data]),
     port_command(C, Data),
     {next_state, connected, State};
 
@@ -228,7 +231,7 @@ handle_sync_event(_Event, _From, StateName, State) ->
 %% @end
 %%--------------------------------------------------------------------
 
-handle_info({_C,{exit_status, PosixCode}}, connected,
+handle_info({_C, {exit_status, PosixCode}}, connected,
             State = #state{console = _C}) ->
     lager:warning("[console:~s] Exited with status ~p but vm in stopped.",
                   [State#state.uuid, PosixCode]),
@@ -289,14 +292,18 @@ code_change(_OldVsn, StateName, State, _Extra) ->
 %%%===================================================================
 
 remove_lock(UUID) ->
+    lager:info("[zlogin:~s] removing docker attach lock.", [UUID]),
     File = mktemp(),
     Update = [{<<"remove_internal_metadata">>, [<<"docker:wait_for_attach">>]}],
     file:write_file(File, jsx:encode(Update)),
     case fifo_cmd:run(?VMADM, ["update", UUID, {f, File}]) of
         {ok, _} ->
+            lager:info("[zlogin:~s] docker attach lock removed.", [UUID]),
             ok = file:delete(File),
             ok;
         E ->
+            lager:info("[zlogin:~s] failed to delete docker attach lock: ~p.",
+                       [UUID, E]),
             file:delete(File),
             E
     end.
@@ -333,10 +340,13 @@ incinerate(Port) ->
 %%     case State#state.console of
 %%         undefined ->
 %%             [{_, Name, _, _, _, _}] = chunter_zone:get_raw(State#state.uuid),
-%%             %%Console = code:priv_dir(chunter) ++ "/runpty /usr/sbin/zlogin -I " ++ binary_to_list(Name),
+%%             %%Console = code:priv_dir(chunter) ++
+%%             %% "/runpty /usr/sbin/zlogin -I " ++ binary_to_list(Name),
 %%             Console = "/usr/sbin/zlogin -Q -I " ++ binary_to_list(Name),
 %%             %% This is a bit of a hack
-%%             %% https://github.com/joyent/sdc-cn-agent/blob/4efd72f2dda2a6daceb51a0cb84d0b06d0bc011d/lib/update-wait-flag.js
+%%             %% https://github.com/joyent/sdc-cn-agent/blob/
+%%             %% 4efd72f2dda2a6daceb51a0cb84d0b06d0bc011d/lib/
+%%             %% update-wait-flag.js
 %%             %% explains why we need it
 %%             ConsolePort = open_port({spawn, Console},
 %%                                     [use_stdio, binary, stderr_to_stdout]),
@@ -347,7 +357,9 @@ incinerate(Port) ->
 %%                     State
 %%             after
 %%                 200 ->
-%%                     chunter_vmadm:update(UUID, [{<<"remove_internal_metadata">>, [<<"docker:wait_for_attach">>]}]),
+%%                     chunter_vmadm:update(UUID,
+%%                                          [{<<"remove_internal_metadata">>,
+%%                                            [<<"docker:wait_for_attach">>]}]),
 %%                     State#state{console = ConsolePort}
 %%             end;
 %%         _ ->
@@ -358,7 +370,8 @@ incinerate(Port) ->
 %%     case State#state.console of
 %%         undefined ->
 %%             [{_, Name, _, _, _, _}] = chunter_zone:get_raw(State#state.uuid),
-%%             Console = code:priv_dir(chunter) ++ "/runpty /usr/sbin/zlogin -Q " ++ binary_to_list(Name),
+%%             Console = code:priv_dir(chunter) ++
+%%             "/runpty /usr/sbin/zlogin -Q " ++ binary_to_list(Name),
 %%             ConsolePort = open_port({spawn, Console}, [binary]),
 %%             State#state{console = ConsolePort};
 %%         _ ->
