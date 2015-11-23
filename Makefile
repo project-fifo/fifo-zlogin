@@ -10,11 +10,11 @@ apps/fifo_zlogin/priv/runpty: utils/runpty.c
 	gcc utils/runpty.c -o apps/fifo_zlogin/priv/runpty
 
 version:
-	echo "$(shell git symbolic-ref HEAD 2> /dev/null | cut -b 12-)-$(shell git log --pretty=format:'%h, %ad' -1)" > fifo_zlogin.version
+	@echo "$(shell git symbolic-ref HEAD 2> /dev/null | cut -b 12-)-$(shell git log --pretty=format:'%h, %ad' -1)" > fifo_zlogin.version
 
 version_header: version
-	cp fifo_zlogin.version rel/files/fifo_zlogin.version
-	echo "-define(VERSION, <<\"$(shell cat fifo_zlogin.version)\">>)." > apps/fifo_zlogin/src/fifo_zlogin_version.hrl
+	@cp fifo_zlogin.version rel/files/fifo_zlogin.version
+	@echo "-define(VERSION, <<\"$(shell cat fifo_zlogin.version)\">>)." > apps/fifo_zlogin/src/fifo_zlogin_version.hrl
 
 package: rel
 	make -C rel/pkg package
