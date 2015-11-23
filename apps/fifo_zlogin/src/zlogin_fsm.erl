@@ -70,6 +70,9 @@ stop(UUID) ->
 tick() ->
     gen_fsm:send_event_after(1000, tick).
 
+check() ->
+    gen_fsm:send_event_after(60000, check).
+
 %%--------------------------------------------------------------------
 %% @private
 %% @doc
@@ -84,16 +87,18 @@ tick() ->
 %% @end
 %%--------------------------------------------------------------------
 init([UUID, kvm]) ->
-    {ok, kvm, #state{uuid = UUID}, 0};
+    {ok, kvm, #state{uuid = UUID}};
 
 init([UUID, docker]) ->
     lager:info("[zlogin:~s] Starting docker zlogin.", [UUID]),
     tick(),
+    check(),
     process_flag(trap_exit, true),
     {ok, stopped, #state{uuid = UUID, type = docker}};
 
 init([UUID, Type]) ->
     tick(),
+    check(),
     process_flag(trap_exit, true),
     {ok, stopped, #state{uuid = UUID, type = Type}}.
 
@@ -119,12 +124,10 @@ kvm(_, _From, State) ->
 %% @end
 %%--------------------------------------------------------------------
 stopped(tick, State = #state{uuid = UUID}) ->
-    lager:info("[zlogin:~s] tick", [UUID]),
     ConsolePort = open_zlogin(State),
     receive
         {'EXIT', ConsolePort, _PosixCode} ->
             tick(),
-            lager:info("[zlogin:~s] failed to login.", [UUID]),
             {next_state, stopped, State}
     after
         200 ->
@@ -133,6 +136,17 @@ stopped(tick, State = #state{uuid = UUID}) ->
             State1  = State#state{console = ConsolePort},
             {next_state, connected, State1}
     end;
+
+stopped(check, State = #state{uuid = UUID}) ->
+    case fifo_cmd:run("/usr/sbin/zoneadm", [{z, UUID}, "list"]) of
+        {ok, _} ->
+            check(),
+            {next_state, stopped, State};
+        _ ->
+            lager:info("[zlogin:~s] shutting down since check failed.", [UUID]),
+            {stop, normal, State}
+    end;
+
 
 stopped({send, Data}, State = #state{uuid = UUID}) ->
     lager:info("[~s] ! < ~s", [UUID, Data]),
@@ -235,12 +249,14 @@ handle_info({_C, {exit_status, PosixCode}}, connected,
             State = #state{console = _C}) ->
     lager:warning("[console:~s] Exited with status ~p but vm in stopped.",
                   [State#state.uuid, PosixCode]),
+    check(),
     {next_state, stopped, State#state{console = undefined}};
 
 handle_info({'EXIT', _C, PosixCode}, connected,
             State = #state{console = _C}) ->
     lager:warning("[console:~s] Exited with status ~p but vm in stopped.",
                   [State#state.uuid, PosixCode]),
+    check(),
     {next_state, stopped, State#state{console = undefined}};
 
 handle_info({C, {data, Data}}, connected,
