@@ -6,7 +6,7 @@
   {git,"https://github.com/project-fifo/fifo_spec.git",
        {ref,"56db8e12b1e1a62df576aff76ab5371a8de2cecd"}},
   1},
- {<<"fifo_utils">>,{pkg,<<"fifo_utils">>,<<"0.1.17">>},0},
+ {<<"fifo_utils">>,{pkg,<<"fifo_utils">>,<<"0.1.18">>},0},
  {<<"goldrush">>,{pkg,<<"goldrush">>,<<"0.1.7">>},2},
  {<<"jsx">>,{pkg,<<"jsx">>,<<"2.8.0">>},0},
  {<<"jsxd">>,{pkg,<<"jsxd">>,<<"0.1.10">>},3},
