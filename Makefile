@@ -2,7 +2,7 @@ REBAR = $(shell pwd)/rebar3
 
 .PHONY: deps rel package quick-test tree
 
-all: apps/fifo_zlogin/priv/runpty version compile
+all: apps/fifo_zlogin/priv/runpty version_header compile
 
 include fifo.mk
 
