@@ -133,7 +133,7 @@ stopped(tick, State = #state{uuid = UUID}) ->
             tick(),
             {next_state, stopped, State}
     after
-        200 ->
+        1500 ->
             lager:info("[zlogin:~s] connected.", [UUID]),
             remove_lock(UUID),
             State1  = State#state{console = ConsolePort},
@@ -252,6 +252,7 @@ handle_info({_C, {exit_status, PosixCode}}, connected,
             State = #state{console = _C}) ->
     lager:warning("[console:~s] Exited with status ~p but vm in stopped.",
                   [State#state.uuid, PosixCode]),
+    tick(),
     check(),
     {next_state, stopped, State#state{console = undefined}};
 
@@ -259,6 +260,7 @@ handle_info({'EXIT', _C, PosixCode}, connected,
             State = #state{console = _C}) ->
     lager:warning("[console:~s] Exited with status ~p but vm in stopped.",
                   [State#state.uuid, PosixCode]),
+    tick(),
     check(),
     {next_state, stopped, State#state{console = undefined}};
 
