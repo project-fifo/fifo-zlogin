@@ -27,6 +27,9 @@ upgrade: $(REBAR)
 	$(REBAR) upgrade 
 	make tree
 
+update: $(REBAR)
+	$(REBAR) update
+
 tree: $(REBAR)
 	$(REBAR) tree | grep -v '=' | sed 's/ (.*//' > tree
 
