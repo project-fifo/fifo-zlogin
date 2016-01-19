@@ -255,9 +255,15 @@ handle_sync_event(_Event, _From, StateName, State) ->
 %%--------------------------------------------------------------------
 
 handle_info({_C, {exit_status, PosixCode}}, connected,
-            State = #state{console = _C}) ->
-    lager:warning("[console:~s] Exited with status ~p but vm in stopped.",
+            State = #state{uuid = UUID, console = _C}) ->
+    lager:warning("[console:~s] Exited with status ~p.",
                   [State#state.uuid, PosixCode]),
+    %% This sucks but we have this horrible situation where vmadm just
+    %% quickly boots the vm then shuts it down again ...
+    %% this only happens AFTER the lock was removed but we kind of do need the
+    %% lock on the next boot.
+    %% so we re-set it.
+    renew_lock(UUID),
     tick(),
     check(),
     {next_state, stopped, State#state{console = undefined}};
@@ -330,6 +336,25 @@ remove_lock(UUID) ->
             ok;
         E ->
             lager:info("[zlogin:~s] failed to delete docker attach lock: ~p.",
+                       [UUID, E]),
+            file:delete(File),
+            E
+    end.
+
+renew_lock(UUID) ->
+    T = erlang:system_time(milli_seconds) + 10000,
+    lager:info("[zlogin:~s] setting docker attach lock.", [UUID]),
+    File = mktemp(),
+    Update = [{<<"set_internal_metadata">>,
+               [{<<"docker:wait_for_attach">>, T}]}],
+    file:write_file(File, jsx:encode(Update)),
+    case fifo_cmd:run(?VMADM, ["update", UUID, {f, File}]) of
+        {ok, _} ->
+            lager:info("[zlogin:~s] docker attach lock set.", [UUID]),
+            ok = file:delete(File),
+            ok;
+        E ->
+            lager:info("[zlogin:~s] failed to set docker attach lock: ~p.",
                        [UUID, E]),
             file:delete(File),
             E
