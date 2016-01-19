@@ -133,7 +133,7 @@ stopped(tick, State = #state{uuid = UUID}) ->
             tick(),
             {next_state, stopped, State}
     after
-        1500 ->
+        5000 ->
             lager:info("[zlogin:~s] connected.", [UUID]),
             remove_lock(UUID),
             State1  = State#state{console = ConsolePort},
