@@ -128,6 +128,9 @@ stopped(tick, State = #state{uuid = UUID}) ->
     receive
         {'EXIT', ConsolePort, _PosixCode} ->
             tick(),
+            {next_state, stopped, State};
+        {_C, {exit_status, _PosixCode}} ->
+            tick(),
             {next_state, stopped, State}
     after
         200 ->
