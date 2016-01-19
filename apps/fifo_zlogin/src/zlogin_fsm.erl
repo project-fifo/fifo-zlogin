@@ -414,10 +414,18 @@ check_state(UUID) ->
         {ok, Data} ->
             [_, _, State | _] = re:split(Data, ":"),
             case State of
-                <<"running">> ->   running;
+                <<"running">> ->
+                    check_state1(UUID);
                 <<"installed">> -> stopped;
                 _ -> other
             end;
         _ ->
             not_found
+    end.
+
+check_state1(UUID) ->
+    case os:cmd("vmadm get " ++ binary_to_list(UUID) ++
+                    " | json state") of
+        "running\n" -> running;
+        _ -> other
     end.
