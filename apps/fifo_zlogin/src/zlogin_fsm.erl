@@ -124,30 +124,36 @@ kvm(_, _From, State) ->
 %% @end
 %%--------------------------------------------------------------------
 stopped(tick, State = #state{uuid = UUID}) ->
-    ConsolePort = open_zlogin(State),
-    receive
-        {'EXIT', ConsolePort, _PosixCode} ->
-            tick(),
-            {next_state, stopped, State};
-        {_C, {exit_status, _PosixCode}} ->
+    case check_state(UUID) of
+        running ->
+            ConsolePort = open_zlogin(State),
+            receive
+                {'EXIT', ConsolePort, _PosixCode} ->
+                    tick(),
+                    {next_state, stopped, State};
+                {_C, {exit_status, _PosixCode}} ->
+                    tick(),
+                    {next_state, stopped, State}
+            after
+                5000 ->
+                    lager:info("[zlogin:~s] connected.", [UUID]),
+                    remove_lock(UUID),
+                    State1  = State#state{console = ConsolePort},
+                    {next_state, connected, State1}
+            end;
+        _ ->
             tick(),
             {next_state, stopped, State}
-    after
-        5000 ->
-            lager:info("[zlogin:~s] connected.", [UUID]),
-            remove_lock(UUID),
-            State1  = State#state{console = ConsolePort},
-            {next_state, connected, State1}
     end;
 
 stopped(check, State = #state{uuid = UUID}) ->
-    case fifo_cmd:run("/usr/sbin/zoneadm", [{z, UUID}, "list"]) of
-        {ok, _} ->
-            check(),
-            {next_state, stopped, State};
-        _ ->
+    case check_state(UUID) of
+        not_found ->
             lager:info("[zlogin:~s] shutting down since check failed.", [UUID]),
-            {stop, normal, State}
+            {stop, normal, State};
+        _ ->
+            check(),
+            {next_state, stopped, State}
     end;
 
 
@@ -402,3 +408,16 @@ incinerate(Port) ->
 
 relay(Msg, #state{listeners = Ls}) ->
     [L ! {data, Msg} || {_, L} <- Ls].
+
+check_state(UUID) ->
+    case fifo_cmd:run("/usr/sbin/zoneadm", [{z, UUID}, "list", p]) of
+        {ok, Data} ->
+            [_, _, State | _] = re:split(Data, ":"),
+            case State of
+                <<"running">> ->   running;
+                <<"installed">> -> stopped;
+                _ -> other
+            end;
+        _ ->
+            not_found
+    end.
