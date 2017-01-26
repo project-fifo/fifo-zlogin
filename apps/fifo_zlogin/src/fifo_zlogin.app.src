@@ -1,6 +1,6 @@
 {application, 'fifo_zlogin',
  [{description, "FiFo zlogin server"},
-  {vsn, "0.7.2"},
+  {vsn, "0.9.0p1"},
   {registered, []},
   {mod, {'fifo_zlogin_app', []}},
   {applications,

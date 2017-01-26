@@ -16,7 +16,7 @@ Copied form riak empd script and modified to fit fifo
     <method_context>
       <method_credential group='nobody' user='nobody'/>
     </method_context>
-    <exec_method name='start' type='method' exec='/opt/fifo_zlogin/erts-7.0/bin/epmd -daemon' timeout_seconds='60'>
+    <exec_method name='start' type='method' exec='/opt/fifo_zlogin/erts-7.1/bin/epmd -daemon' timeout_seconds='60'>
       <method_context>
 	<method_environment>
 	  <envvar name='PATH' value='/opt/local/gnu/bin:/opt/local/bin:/opt/local/sbin:/usr/bin:/usr/sbin'/>
