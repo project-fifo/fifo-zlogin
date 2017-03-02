@@ -10,6 +10,7 @@ clean:
 package:
 	cp install.sh $(BASENAME)
 	cp -r ../../_build/prod/rel/$(COMPONENT) $(COMPONENT)
+	-mkdir $(COMPONENT)/share/lib
 	cp /opt/local/lib/libncurses.so.6 $(COMPONENT)/share/lib/libncurses.so.6
 	cp /opt/local/lib/libcrypto.so.1.0.0 $(COMPONENT)/share/lib/libcrypto.so.1.0.0
 	tar -cf $(BASENAME).tar $(COMPONENT)
