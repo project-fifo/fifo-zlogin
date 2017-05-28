@@ -419,7 +419,7 @@ check_state(UUID) ->
 check_jail(UUID) ->
     Lines = re:split(os:cmd("iocage list -H -l"), "\n"),
     Jails = [re:split(L, "\t") || L <- Lines, L /= <<>>],
-    check_jails(Jails, UUID).
+    check_jail(Jails, UUID).
 
 check_jail([], _UUID) ->
     not_found;
