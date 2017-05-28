@@ -371,7 +371,7 @@ mktemp() ->
     lib:nonl(os:cmd("mktemp")).
 
 open_jail(#state{uuid = UUID, type = jail}) ->
-    pty(["/usr/local/bin/iocage", UUID]).
+    pty(["/usr/local/bin/iocage", "console", UUID]).
 
 open_zlogin(S) ->
     pty(zlogin_args(S)).
