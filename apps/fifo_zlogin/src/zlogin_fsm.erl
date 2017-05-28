@@ -414,3 +414,20 @@ check_state(UUID) ->
         _ ->
             not_found
     end.
+
+
+check_jail(UUID) ->
+    Lines = re:split(os:cmd("iocage list -H -l"), "\n"),
+    Jails = [re:split(L, "\t") || L <- Lines, L /= <<>>],
+    check_jails(Jails, UUID).
+
+check_jail([], _UUID) ->
+    not_found;
+check_jail([[_ID, UUID, _Boon, <<"up">> | _] | _], UUID) ->
+    running;
+
+check_jail([[_ID, UUID | _] | _], UUID) ->
+    stopped;
+check_jail([_ | Rest], UUID) ->
+    check_jail(Rest, UUID).
+
