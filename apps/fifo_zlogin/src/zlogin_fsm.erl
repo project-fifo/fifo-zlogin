@@ -96,6 +96,13 @@ init([UUID, docker]) ->
     process_flag(trap_exit, true),
     {ok, stopped, #state{uuid = UUID, type = docker}};
 
+init([UUID, jail]) ->
+    lager:info("[zlogin:~s] Starting jail login.", [UUID]),
+    tick(),
+    check(),
+    process_flag(trap_exit, true),
+    {ok, stopped, #state{uuid = UUID, type = jail}};
+
 init([UUID, Type]) ->
     tick(),
     check(),
@@ -123,6 +130,29 @@ kvm(_, _From, State) ->
 %%                   {stop, Reason, NewState}
 %% @end
 %%--------------------------------------------------------------------
+
+stopped(tick, State = #state{uuid = UUID, type = jail}) ->
+    case check_jail(UUID) of
+        running ->
+            ConsolePort = open_jail(State),
+            receive
+                {'EXIT', ConsolePort, _PosixCode} ->
+                    tick(),
+                    {next_state, stopped, State};
+                {_C, {exit_status, _PosixCode}} ->
+                    tick(),
+                    {next_state, stopped, State}
+            after
+                500 ->
+                    lager:info("[zlogin:~s] connected.", [UUID]),
+                    State1  = State#state{console = ConsolePort},
+                    {next_state, connected, State1}
+            end;
+        _ ->
+            tick(),
+            {next_state, stopped, State}
+    end;
+
 stopped(tick, State = #state{uuid = UUID}) ->
     case check_state(UUID) of
         running ->
@@ -146,16 +176,11 @@ stopped(tick, State = #state{uuid = UUID}) ->
             {next_state, stopped, State}
     end;
 
-stopped(check, State = #state{uuid = UUID}) ->
-    case check_state(UUID) of
-        not_found ->
-            lager:info("[zlogin:~s] shutting down since check failed.", [UUID]),
-            {stop, normal, State};
-        _ ->
-            check(),
-            {next_state, stopped, State}
-    end;
+stopped(check, State = #state{uuid = UUID, type = jail}) ->
+    eval_check(check_jail(UUID), State);
 
+stopped(check, State = #state{uuid = UUID}) ->
+    eval_check(check_state(UUID), State);
 
 stopped({send, Data}, State = #state{uuid = UUID}) ->
     lager:info("[~s] ! < ~s", [UUID, Data]),
@@ -169,6 +194,13 @@ connected({send, Data}, State = #state{uuid = UUID, console = C}) ->
 
 connected(_, State) ->
     {next_state, connected, State}.
+
+eval_check(not_found, State = #state{ uuid = UUID}) ->
+    lager:info("[zlogin:~s] shutting down since check failed.", [UUID]),
+    {stop, normal, State};
+eval_check(_, State) ->
+    check(),
+    {next_state, stopped, State}.
 
 %%--------------------------------------------------------------------
 %% @private
@@ -338,8 +370,13 @@ remove_lock(UUID) ->
 mktemp() ->
     lib:nonl(os:cmd("mktemp")).
 
+open_jail(#state{uuid = UUID, type = jail}) ->
+    pty(["/usr/local/bin/iocage", "console", UUID]).
+
 open_zlogin(S) ->
-    Args = zlogin_args(S),
+    pty(zlogin_args(S)).
+
+pty(Args) ->
     open_port({spawn_executable, runpty()},
               [use_stdio, binary, stderr_to_stdout, {args, Args}, exit_status]).
 
@@ -352,7 +389,6 @@ zlogin_args(#state{uuid = UUID}) ->
 runpty() ->
     code:priv_dir(fifo_zlogin) ++ "/runpty".
 
-
 incinerate(Port) ->
     case erlang:port_info(Port, os_pid) of
         {os_pid, OsPid} ->
@@ -362,49 +398,6 @@ incinerate(Port) ->
         _ ->
             ok
     end.
-
-%% init_console(State = #state{uuid = UUID, zone_type = docker}) ->
-%%     case State#state.console of
-%%         undefined ->
-%%             [{_, Name, _, _, _, _}] = chunter_zone:get_raw(State#state.uuid),
-%%             %%Console = code:priv_dir(chunter) ++
-%%             %% "/runpty /usr/sbin/zlogin -I " ++ binary_to_list(Name),
-%%             Console = "/usr/sbin/zlogin -Q -I " ++ binary_to_list(Name),
-%%             %% This is a bit of a hack
-%%             %% https://github.com/joyent/sdc-cn-agent/blob/
-%%             %% 4efd72f2dda2a6daceb51a0cb84d0b06d0bc011d/lib/
-%%             %% update-wait-flag.js
-%%             %% explains why we need it
-%%             ConsolePort = open_port({spawn, Console},
-%%                                     [use_stdio, binary, stderr_to_stdout]),
-%%             %% We make sure that the console actually survuves for 200 ms to
-%%             %% prevent the attach to 'succeed' but not succeed
-%%             receive
-%%                 {'EXIT', ConsolePort, _PosixCode} ->
-%%                     State
-%%             after
-%%                 200 ->
-%%                     chunter_vmadm:update(UUID,
-%%                                          [{<<"remove_internal_metadata">>,
-%%                                            [<<"docker:wait_for_attach">>]}]),
-%%                     State#state{console = ConsolePort}
-%%             end;
-%%         _ ->
-%%             State
-%%     end;
-
-%% init_console(State) ->
-%%     case State#state.console of
-%%         undefined ->
-%%             [{_, Name, _, _, _, _}] = chunter_zone:get_raw(State#state.uuid),
-%%             Console = code:priv_dir(chunter) ++
-%%             "/runpty /usr/sbin/zlogin -Q " ++ binary_to_list(Name),
-%%             ConsolePort = open_port({spawn, Console}, [binary]),
-%%             State#state{console = ConsolePort};
-%%         _ ->
-%%             State
-%%     end.
-
 
 relay(Msg, #state{listeners = Ls}) ->
     [L ! {data, Msg} || {_, L} <- Ls].
@@ -421,3 +414,20 @@ check_state(UUID) ->
         _ ->
             not_found
     end.
+
+
+check_jail(UUID) ->
+    Lines = re:split(os:cmd("iocage list -H -l"), "\n"),
+    Jails = [re:split(L, "\t") || L <- Lines, L /= <<>>],
+    check_jail(Jails, UUID).
+
+check_jail([], _UUID) ->
+    not_found;
+check_jail([[_ID, UUID, _Boon, <<"up">> | _] | _], UUID) ->
+    running;
+
+check_jail([[_ID, UUID | _] | _], UUID) ->
+    stopped;
+check_jail([_ | Rest], UUID) ->
+    check_jail(Rest, UUID).
+
