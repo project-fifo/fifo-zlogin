@@ -1,0 +1,41 @@
+#!/bin/sh
+#
+# $FreeBSD$
+#
+
+# PROVIDE: chunter
+# REQUIRE: LOGIN iocage
+# KEYWORD: shutdown
+
+
+. /etc/rc.subr
+
+name="zlogin"
+rcvar=zlogin_enable
+
+load_rc_config $name
+: ${zlogin_enable="NO"}
+
+
+start_cmd="${name}_start"
+stop_cmd="${name}_stop"
+
+
+
+zlogin_start()
+{
+	if checkyesno ${rcvar}; then
+		echo "* starting fifo zlogin... "
+		/usr/zlogin/bin/zlogin start
+	fi
+}
+
+zlogin_start()
+{
+	if checkyesno ${rcvar}; then
+		echo "* stoping fifo zlogin... "
+		/usr/zlogin/bin/zlogin stop
+	fi
+}
+
+run_rc_command "$1"
