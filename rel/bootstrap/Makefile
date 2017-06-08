@@ -10,8 +10,8 @@ clean:
 bootstrap:
 	cp install.sh $(BASENAME)
 	cp -r ../../_build/prod/rel/$(COMPONENT) $(COMPONENT)
-	cp ../all/smartos/fifo_zlogin.xml $(COMPONENT)/share/
-	cp ../all/smartos/guess_ip.sh $(COMPONENT)/share/
+	cp ../smartos/fifo_zlogin.xml $(COMPONENT)/share/
+	cp ../smartos/guess_ip.sh $(COMPONENT)/share/
 	-mkdir $(COMPONENT)/share/lib
 	cp /opt/local/lib/libncurses.so.6 $(COMPONENT)/share/lib/libncurses.so.6
 	cp /opt/local/lib/libcrypto.so.1.0.0 $(COMPONENT)/share/lib/libcrypto.so.1.0.0
