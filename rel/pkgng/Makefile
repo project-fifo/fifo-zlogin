@@ -1,5 +1,5 @@
 VERSION=0.9.2
-COMPONENT_INTERNAL=fifo_zlogin
+COMPONENT_INTERNAL=fzlogin
 INSTALL_DIR=usr
 DEPS="coreutils" "sudo"
 
