@@ -32,7 +32,7 @@ package: rel
 freebsd: update ${PLATFORM}/rel
 	gmake -C rel/pkgng package
 
-freebsd/rel: version_header
+freebsd/rel: apps/fifo_zlogin/priv/runpty version_header
 	$(REBAR) as prod release
 
 smartos: update ${PLATFORM}/rel
