@@ -9,8 +9,8 @@ clean:
 
 bootstrap:
 	cp install.sh $(BASENAME)
-	-mkdir $(COMPONENT)/share/lib
 	cp -r ../../_build/prod/rel/$(COMPONENT) $(COMPONENT)
+	-mkdir -p $(COMPONENT)/share/lib
 	cp ../smartos/share/fifo_zlogin.xml $(COMPONENT)/share/
 	cp ../smartos/share/guess_ip.sh $(COMPONENT)/share/
 	cp /opt/local/lib/libncurses.so.6 $(COMPONENT)/share/lib/libncurses.so.6
