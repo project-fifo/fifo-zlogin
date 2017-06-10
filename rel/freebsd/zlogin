@@ -26,15 +26,15 @@ zlogin_start()
 {
 	if checkyesno ${rcvar}; then
 		echo "* starting fifo zlogin... "
-		/usr/zlogin/bin/zlogin start
+		/usr/fifo_zlogin/bin/fifo_zlogin start
 	fi
 }
 
-zlogin_start()
+zlogin_stop()
 {
 	if checkyesno ${rcvar}; then
 		echo "* stoping fifo zlogin... "
-		/usr/zlogin/bin/zlogin stop
+		/usr/fifo_zlogin/bin/fifo_zlogin stop
 	fi
 }
 
