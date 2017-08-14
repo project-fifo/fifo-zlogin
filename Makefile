@@ -16,7 +16,7 @@ endif
 include fifo.mk
 
 apps/fifo_zlogin/priv/runpty: utils/runpty.c
-	gcc utils/runpty.c -o apps/fifo_zlogin/priv/runpty
+	${CC} utils/runpty.c -o apps/fifo_zlogin/priv/runpty
 
 version:
 	@echo "$(shell git symbolic-ref HEAD 2> /dev/null | cut -b 12-)-$(shell git log --pretty=format:'%h, %ad' -1)" > fifo_zlogin.version
