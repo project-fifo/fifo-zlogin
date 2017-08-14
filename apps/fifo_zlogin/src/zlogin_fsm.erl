@@ -417,13 +417,13 @@ check_state(UUID) ->
 
 
 check_jail(UUID) ->
-    Lines = re:split(os:cmd("iocage list -H -l"), "\n"),
-    Jails = [re:split(L, "\t") || L <- Lines, L /= <<>>],
+    Lines = re:split(os:cmd("vmadm list -Hp"), "\n"),
+    Jails = [re:split(L, "\:") || L <- Lines, L /= <<>>],
     check_jail(Jails, UUID).
 
 check_jail([], _UUID) ->
     not_found;
-check_jail([[_ID, UUID, _Boon, <<"up">> | _] | _], UUID) ->
+check_jail([[UUID, _Type, _RAM, <<"running">> | _] | _], UUID) ->
     running;
 
 check_jail([[_ID, UUID | _] | _], UUID) ->
