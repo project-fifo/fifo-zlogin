@@ -1,5 +1,5 @@
 name: zlogin
-version: "0.9.2"
+version: "__VNS__"
 origin: projectfifo/zlogin
 comment: "fifo hypervisor login agent"
 desc: "fifo hypervisor login agent"
