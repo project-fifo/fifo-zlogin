@@ -21,3 +21,6 @@ rel/files/fifo_zlogin.version
 apps/fifo_zlogin/priv/runpty
 apps/fifo_zlogin/src/fifo_zlogin_version.hrl
 fifo_zlogin.version
+*.gz
+*.tar
+*.txz
