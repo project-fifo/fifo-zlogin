@@ -1,4 +1,4 @@
-INSTALL_DIR=usr
+INSTALL_DIR=usr/local/lib
 DEPS="coreutils" "sudo"
 REBARPROFILE ?= default
 

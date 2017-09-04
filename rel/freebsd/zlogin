@@ -3,8 +3,8 @@
 # $FreeBSD$
 #
 
-# PROVIDE: chunter
-# REQUIRE: LOGIN iocage
+# PROVIDE: zlogin
+# REQUIRE: LOGIN
 # KEYWORD: shutdown
 
 
@@ -26,7 +26,7 @@ zlogin_start()
 {
 	if checkyesno ${rcvar}; then
 		echo "* starting fifo zlogin... "
-		/usr/fifo_zlogin/bin/fifo_zlogin start
+		/usr/local/lib/fifo_zlogin/bin/fifo_zlogin start
 	fi
 }
 
@@ -34,7 +34,7 @@ zlogin_stop()
 {
 	if checkyesno ${rcvar}; then
 		echo "* stoping fifo zlogin... "
-		/usr/fifo_zlogin/bin/fifo_zlogin stop
+		/usr/local/lib/fifo_zlogin/bin/fifo_zlogin stop
 	fi
 }
 
