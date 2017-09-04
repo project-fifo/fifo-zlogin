@@ -1,6 +1,8 @@
+APP=fifo_zlogin
+include config.mk
 REBAR = $(shell pwd)/rebar3
 
-.PHONY: deps rel package quick-test tree dist
+.PHONY: deps rel quick-test tree 
 
 uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')
 uname_V6 := $(shell sh -c 'uname -v 2>/dev/null | cut -c-6 || echo not')
@@ -23,27 +25,3 @@ version:
 
 version_header: version
 	@echo "-define(VERSION, <<\"$(shell cat fifo_zlogin.version)\">>)." > apps/fifo_zlogin/src/fifo_zlogin_version.hrl
-
-dist: ${PLATFORM} ;
-
-package: rel
-	make -C rel/pkg package
-
-freebsd: update ${PLATFORM}/rel
-	gmake -C rel/pkgng package
-
-freebsd/rel: apps/fifo_zlogin/priv/runpty version_header
-	$(REBAR) as prod release
-
-smartos: update ${PLATFORM}/rel
-	make -C rel/bootstrap bootstrap
-
-smartos/rel: apps/fifo_zlogin/priv/runpty version_header compile
-	-rm -r ./rel/fifo_zlogin/share
-	$(REBAR) as prod release
-
-
-clean:
-	$(REBAR) clean
-	make -C rel/bootstrap clean
-	make -C rel/pkgng clean

@@ -1,13 +1,13 @@
-VERSION=0.9.2
-COMPONENT=fifo_zlogin
+include ../../config.mk
+
 SUFFIX:=$(shell echo $(SUFFIX))
 BASENAME:=$(COMPONENT)-$(VERSION)$(SUFFIX)
-.PHONY: bootstrap clean
+.PHONY: package clean
 
 clean:
 	-rm *.gz
 
-bootstrap:
+package:
 	cp install.sh $(BASENAME)
 	cp -r ../../_build/prod/rel/$(COMPONENT) $(COMPONENT)
 	-mkdir -p $(COMPONENT)/share/lib
