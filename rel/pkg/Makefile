@@ -9,7 +9,7 @@ clean:
 
 package:
 	cp install.sh $(BASENAME)
-	cp -r ../../_build/prod/rel/$(COMPONENT) $(COMPONENT)
+	cp -r ../../_build/${REBARPROFILE}/rel/$(COMPONENT) $(COMPONENT)
 	-mkdir -p $(COMPONENT)/share/lib
 	cp ../smartos/share/fifo_zlogin.xml $(COMPONENT)/share/
 	cp ../smartos/share/guess_ip.sh $(COMPONENT)/share/
