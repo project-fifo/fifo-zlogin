@@ -10,7 +10,7 @@ include ../../_build/${REBARPROFILE}/lib/fifo_utils/priv/pkgng.mk
 prepare:
 	-rm -r $(STAGE_DIR)
 	mkdir -p $(STAGE_DIR)/$(INSTALL_DIR)
-	cp -r ../../_build/prod/rel/$(COMPONENT_INTERNAL) $(STAGE_DIR)/$(INSTALL_DIR)
+	cp -r ../../_build/${REBARPROFILE}/rel/$(COMPONENT_INTERNAL) $(STAGE_DIR)/$(INSTALL_DIR)
 	rm -rf $(STAGE_DIR)/$(INSTALL_DIR)/lib/*/c_src
 	mkdir -p $(STAGE_DIR)/usr/local/etc/rc.d/
 	cp ../freebsd/zlogin $(STAGE_DIR)/usr/local/etc/rc.d/
