@@ -21,6 +21,7 @@ trigger_test:
   stage: test
   script:
     - ./rebar3 upgrade $DOWNSTREAM_LIBRARY 
+    - ./rebar3 dialyzer
     - ./rebar3 xref
   tags:
     - smartos
